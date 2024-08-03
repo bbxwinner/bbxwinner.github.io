@@ -24,3 +24,4 @@ go.work.sum
 # hugo
 themes/
 .hugo_build.lock
+public/

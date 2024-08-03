@@ -15,7 +15,7 @@ let myHeading = document.querySelector("h1");
 function setUserName() {
     let myName = prompt("请输入你的名字。");
     if (!myName || myName === null) {
-        allert("名字不能为空！");
+        alert("名字不能为空！");
         setUserName();
     } else {
         localStorage.setItem("name", myName);
