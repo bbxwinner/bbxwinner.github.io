@@ -25,7 +25,7 @@ function setUserName() {
 
 if (!localStorage.getItem("name")) {
     setUserName();
-    console.log("name is null, set new user name: " + localStorage.getItem("name"));
+    console.log("set new name: " + localStorage.getItem("name"));
 } else {
     let storedName = localStorage.getItem("name");
     myHeading.textContent = "Mozilla 酷毙了，" + storedName;
@@ -35,5 +35,6 @@ if (!localStorage.getItem("name")) {
 switchUserButton.onclick = function () {
     console.log("click switch-user button");
     setUserName();
+    console.log("set new name: " + localStorage.getItem("name"));
 };
 
