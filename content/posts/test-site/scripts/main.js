@@ -9,7 +9,7 @@ myImage.onclick = function () {
     }
 };
 
-let myButton = document.querySelector("button");
+let switchUserButton = document.getElementById("switch-user");
 let myHeading = document.querySelector("h1");
 
 function setUserName() {
@@ -25,12 +25,15 @@ function setUserName() {
 
 if (!localStorage.getItem("name")) {
     setUserName();
+    console.log("name is null, set new user name: " + localStorage.getItem("name"));
 } else {
     let storedName = localStorage.getItem("name");
     myHeading.textContent = "Mozilla 酷毙了，" + storedName;
+    console.log("name already exists: " + storedName);
 }
 
-myButton.onclick = function () {
+switchUserButton.onclick = function () {
+    console.log("click switch-user button");
     setUserName();
 };
 

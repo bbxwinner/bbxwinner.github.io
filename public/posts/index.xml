@@ -22,9 +22,10 @@ Visit the Hugo website!</description>
       <link>http://localhost:1313/posts/test-site/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/posts/test-site/</guid>
-      <description>&lt;!DOCTYPE html&gt;My test page切换用户Mozilla is coolAt Mozilla, we’re a global community of
-technologiststhinkersbuildersworking together to keep the Internet alive and accessible, so people worldwide can be informed contributors andcreators of the Web.We believe this act of human collaboration across an open platform is essential to individual growth and ourcollective future.
-Read the Mozilla Manifestoto learn even more about the values and principles that guide the pursuit of our mission.</description>
+      <description>
+my test page
+
+</description>
     </item>
   </channel>
 </rss>
