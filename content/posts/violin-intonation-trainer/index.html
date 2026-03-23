@@ -1,0 +1,1063 @@
+---
+title: "Violin Intonation Trainer"
+date: 2026-03-23T12:00:00+08:00
+---
+
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>小提琴音准练习器</title>
+    <style>
+        :root {
+            --bg: #f6f4ee;
+            --card: #fffdf8;
+            --ink: #1c1a17;
+            --muted: #6f675d;
+            --accent: #9f2f00;
+            --good: #0f7a43;
+            --bad: #b42318;
+            --line: #d9d2c5;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", Georgia, serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 10% -10%, #ffffff 0, #ffffff66 25%, transparent 45%),
+                radial-gradient(circle at 90% 0, #f1e9dd 0, #f1e9dd88 20%, transparent 44%),
+                var(--bg);
+            min-height: 100vh;
+        }
+
+        .wrap {
+            width: min(960px, 92vw);
+            margin: 2rem auto 3rem;
+        }
+
+        .title {
+            margin: 0 0 0.35rem;
+            font-size: clamp(1.6rem, 3.5vw, 2.5rem);
+        }
+
+        .subtitle {
+            margin: 0 0 1.2rem;
+            color: var(--muted);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 1rem;
+            box-shadow: 0 8px 28px #0000000f;
+        }
+
+        .settings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.8rem;
+            align-items: end;
+        }
+
+        label {
+            display: block;
+            font-size: 0.92rem;
+            color: var(--muted);
+            margin-bottom: 0.35rem;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            border: 1px solid #c8bfaf;
+            border-radius: 10px;
+            background: #fff;
+            color: var(--ink);
+            padding: 0.56rem 0.65rem;
+            font-size: 1rem;
+        }
+
+        input[type="checkbox"] {
+            width: auto;
+            accent-color: var(--accent);
+        }
+
+        input[type="range"] {
+            padding: 0;
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 120ms ease, box-shadow 120ms ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .btn-stop {
+            background: #fff;
+        }
+
+        .runbox {
+            display: grid;
+            gap: 0.9rem;
+        }
+
+        .status {
+            display: flex;
+            gap: 0.7rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .chip {
+            border: 1px solid var(--line);
+            background: #fff;
+            border-radius: 999px;
+            padding: 0.25rem 0.7rem;
+            font-size: 0.9rem;
+        }
+
+        .countdown {
+            font-size: clamp(2.3rem, 10vw, 5rem);
+            font-weight: 700;
+            color: var(--accent);
+            min-height: 1.3em;
+        }
+
+        .staff {
+            width: min(100%, 560px);
+            max-width: 100%;
+            display: block;
+        }
+
+        .staff-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 0.8rem;
+        }
+
+        .staff-slot {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #fffefa;
+            padding: 0.6rem;
+        }
+
+        .staff-slot[hidden] {
+            display: none;
+        }
+
+        .staff-label {
+            margin: 0 0 0.35rem;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .meter {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            overflow: hidden;
+            height: 18px;
+            background: #f1ece1;
+        }
+
+        .meter-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--bad), #e9a23b, var(--good));
+            transition: width 80ms linear;
+        }
+
+        .live {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 0.5rem;
+            border-bottom: 1px dashed var(--line);
+            font-size: 0.94rem;
+        }
+
+        .ok {
+            color: var(--good);
+            font-weight: 700;
+        }
+
+        .ng {
+            color: var(--bad);
+            font-weight: 700;
+        }
+
+        .summary {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .summary .chip {
+            font-size: 1rem;
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 700px) {
+            .wrap {
+                margin-top: 1rem;
+            }
+
+            .card {
+                border-radius: 12px;
+                padding: 0.85rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="wrap">
+        <h1 class="title">小提琴音准练习器</h1>
+        <p class="subtitle">随机出题 -> 倒计时 -> 麦克风测音 -> 自动统计命中率</p>
+
+        <section class="card">
+            <div class="settings">
+                <div>
+                    <label for="rounds">练习数量（题）</label>
+                    <input id="rounds" type="number" min="1" max="200" value="12">
+                </div>
+                <div>
+                    <label for="tol">容差（音分，+-）</label>
+                    <input id="tol" type="number" min="1" max="100" value="3">
+                </div>
+                <div>
+                    <label for="countdown">倒计时（秒）</label>
+                    <input id="countdown" type="number" min="1" max="8" value="3">
+                </div>
+                <div>
+                    <label for="listen">收音时长（秒）</label>
+                    <input id="listen" type="number" min="0.8" max="6" step="0.1" value="3">
+                </div>
+                <div>
+                    <label for="practiceMode">练习模式</label>
+                    <select id="practiceMode">
+                        <option value="single">单音</option>
+                        <option value="interval">音程（前后两个音）</option>
+                    </select>
+                </div>
+                <div id="intervalTypeWrap" hidden>
+                    <label for="intervalType">音程类型</label>
+                    <select id="intervalType">
+                        <option value="mixed">混合常见音程</option>
+                        <option value="second">二度</option>
+                        <option value="third">三度</option>
+                        <option value="fourth">四度</option>
+                        <option value="tritone">增四 / 减五</option>
+                        <option value="fifth">五度</option>
+                        <option value="sixth">六度</option>
+                        <option value="seventh">七度</option>
+                        <option value="octave">八度</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="pool">音符集合</label>
+                    <select id="pool">
+                        <option value="natural">自然音（A B C D E F G）</option>
+                        <option value="chromatic">含升降半音（12平均律）</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="register">音域 / 把位</label>
+                    <select id="register">
+                        <option value="violin">小提琴常用（G3-A6）</option>
+                        <option value="easy">入门（G3-A5）</option>
+                        <option value="open">空弦（G D A E）</option>
+                        <option value="first">一把位</option>
+                        <option value="second">二把位</option>
+                        <option value="third">三把位</option>
+                        <option value="fifth">五把位</option>
+                        <option value="seventh">七把位</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="soundEnabled">倒计时提示音</label>
+                    <input id="soundEnabled" type="checkbox" checked>
+                </div>
+                <div>
+                    <label for="soundVolume">提示音音量</label>
+                    <input id="soundVolume" type="range" min="0" max="100" step="1" value="35">
+                </div>
+                <div>
+                    <button id="startBtn" class="btn-primary">开始练习</button>
+                </div>
+                <div>
+                    <button id="stopBtn" class="btn-stop" disabled>停止</button>
+                </div>
+            </div>
+            <p class="hint">提示：首次开始会请求麦克风权限；请在相对安静环境下使用，拉长音更容易判定。</p>
+        </section>
+
+        <section class="card runbox">
+            <div class="status">
+                <span class="chip" id="progress">未开始</span>
+                <span class="chip" id="phase">等待</span>
+                <span class="chip" id="targetFreq">目标频率：-</span>
+                <span class="chip" id="intervalInfo" hidden>音程：-</span>
+            </div>
+
+            <div class="staff-grid">
+                <div id="staffSlot1" class="staff-slot">
+                    <p id="staffLabel1" class="staff-label">目标音</p>
+                    <svg id="staffView1" class="staff" viewBox="0 0 560 260" aria-label="五线谱视图 1">
+                        <defs>
+                            <linearGradient id="staffbg1" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stop-color="#fffdf8"></stop>
+                                <stop offset="100%" stop-color="#f4ecdf"></stop>
+                            </linearGradient>
+                        </defs>
+                        <rect x="0" y="0" width="560" height="260" fill="url(#staffbg1)"></rect>
+                        <g id="staffLines1" stroke="#5f564b" stroke-width="1.2"></g>
+                        <g id="noteLayer1"></g>
+                        <text x="42" y="148" font-size="62" fill="#3c332a" font-family="Georgia, serif">&#119070;</text>
+                    </svg>
+                </div>
+
+                <div id="staffSlot2" class="staff-slot" hidden>
+                    <p id="staffLabel2" class="staff-label">音2</p>
+                    <svg id="staffView2" class="staff" viewBox="0 0 560 260" aria-label="五线谱视图 2">
+                        <defs>
+                            <linearGradient id="staffbg2" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stop-color="#fffdf8"></stop>
+                                <stop offset="100%" stop-color="#f4ecdf"></stop>
+                            </linearGradient>
+                        </defs>
+                        <rect x="0" y="0" width="560" height="260" fill="url(#staffbg2)"></rect>
+                        <g id="staffLines2" stroke="#5f564b" stroke-width="1.2"></g>
+                        <g id="noteLayer2"></g>
+                        <text x="42" y="148" font-size="62" fill="#3c332a" font-family="Georgia, serif">&#119070;</text>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="countdown" id="countdownText">-</div>
+
+            <div class="meter" aria-hidden="true">
+                <div id="meterBar" class="meter-bar"></div>
+            </div>
+            <div class="live" id="liveText">实时检测：-</div>
+        </section>
+
+        <section class="card">
+            <h2>结果统计</h2>
+            <div class="summary" id="summary">
+                <span class="chip">命中：0/0</span>
+                <span class="chip">胜率：0.0%</span>
+                <span class="chip">平均偏差：-</span>
+            </div>
+            <div style="overflow:auto; margin-top:0.7rem;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>目标音 / 音程</th>
+                            <th>实测频率</th>
+                            <th>偏差（cent）</th>
+                            <th>结果</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultBody"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const NOTES_SHARP = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        const NATURAL_SET = new Set(["A", "B", "C", "D", "E", "F", "G"]);
+        const VIOLIN_STRING_BASES = [55, 62, 69, 76];
+        const INTERVAL_OPTIONS = {
+            mixed: { label: "混合常见音程", semitones: [2, 3, 4, 5, 7, 8, 9, 12] },
+            second: { label: "二度", semitones: [1, 2] },
+            third: { label: "三度", semitones: [3, 4] },
+            fourth: { label: "四度", semitones: [5] },
+            tritone: { label: "增四 / 减五", semitones: [6] },
+            fifth: { label: "五度", semitones: [7] },
+            sixth: { label: "六度", semitones: [8, 9] },
+            seventh: { label: "七度", semitones: [10, 11] },
+            octave: { label: "八度", semitones: [12] }
+        };
+        const REGISTER_PRESETS = {
+            violin: { type: "range", start: 55, end: 93 },
+            easy: { type: "range", start: 55, end: 81 },
+            open: { type: "position", offsets: [0] },
+            first: { type: "position", offsets: [0, 1, 2, 3, 4, 5, 6] },
+            second: { type: "position", offsets: [2, 3, 4, 5, 6, 7, 8] },
+            third: { type: "position", offsets: [4, 5, 6, 7, 8, 9, 10] },
+            fifth: { type: "position", offsets: [7, 8, 9, 10, 11, 12, 13] },
+            seventh: { type: "position", offsets: [10, 11, 12, 13, 14, 15, 16] }
+        };
+
+        const el = {
+            rounds: document.getElementById("rounds"),
+            tol: document.getElementById("tol"),
+            countdown: document.getElementById("countdown"),
+            listen: document.getElementById("listen"),
+            practiceMode: document.getElementById("practiceMode"),
+            intervalTypeWrap: document.getElementById("intervalTypeWrap"),
+            intervalType: document.getElementById("intervalType"),
+            pool: document.getElementById("pool"),
+            register: document.getElementById("register"),
+            soundEnabled: document.getElementById("soundEnabled"),
+            soundVolume: document.getElementById("soundVolume"),
+            startBtn: document.getElementById("startBtn"),
+            stopBtn: document.getElementById("stopBtn"),
+            progress: document.getElementById("progress"),
+            phase: document.getElementById("phase"),
+            targetFreq: document.getElementById("targetFreq"),
+            intervalInfo: document.getElementById("intervalInfo"),
+            staffSlot1: document.getElementById("staffSlot1"),
+            staffSlot2: document.getElementById("staffSlot2"),
+            staffLabel1: document.getElementById("staffLabel1"),
+            staffLabel2: document.getElementById("staffLabel2"),
+            staffView1: document.getElementById("staffView1"),
+            staffView2: document.getElementById("staffView2"),
+            countdownText: document.getElementById("countdownText"),
+            liveText: document.getElementById("liveText"),
+            meterBar: document.getElementById("meterBar"),
+            summary: document.getElementById("summary"),
+            resultBody: document.getElementById("resultBody"),
+            staffLines1: document.getElementById("staffLines1"),
+            staffLines2: document.getElementById("staffLines2"),
+            noteLayer1: document.getElementById("noteLayer1"),
+            noteLayer2: document.getElementById("noteLayer2")
+        };
+
+        const state = {
+            running: false,
+            currentRound: 0,
+            totalRounds: 0,
+            tolerance: 3,
+            countdownSec: 3,
+            listenSec: 3,
+            practiceMode: "single",
+            intervalType: "mixed",
+            soundEnabled: true,
+            soundVolume: 0.35,
+            notePool: [],
+            intervalPairs: [],
+            currentNote: null,
+            results: [],
+            media: null,
+            rafId: 0,
+            stopRequested: false
+        };
+
+        function midiToFreq(midi) {
+            return 440 * Math.pow(2, (midi - 69) / 12);
+        }
+
+        function midiToNoteObj(midi) {
+            const pc = (midi + 1200) % 12;
+            const octave = Math.floor(midi / 12) - 1;
+            const name = NOTES_SHARP[pc];
+            return {
+                midi,
+                name,
+                octave,
+                label: `${name}${octave}`,
+                freq: midiToFreq(midi)
+            };
+        }
+
+        function buildNotePool(rangeMode, poolMode) {
+            const preset = REGISTER_PRESETS[rangeMode] || REGISTER_PRESETS.violin;
+            const midiValues = [];
+
+            if (preset.type === "range") {
+                for (let m = preset.start; m <= preset.end; m++) {
+                    midiValues.push(m);
+                }
+            } else {
+                VIOLIN_STRING_BASES.forEach((base) => {
+                    preset.offsets.forEach((offset) => {
+                        const midi = base + offset;
+                        if (midi >= 55 && midi <= 93) {
+                            midiValues.push(midi);
+                        }
+                    });
+                });
+            }
+
+            const arr = [];
+            const seen = new Set();
+            for (const m of midiValues) {
+                if (seen.has(m)) {
+                    continue;
+                }
+                seen.add(m);
+                const note = midiToNoteObj(m);
+                if (poolMode === "natural" && !NATURAL_SET.has(note.name)) {
+                    continue;
+                }
+                arr.push(note);
+            }
+            return arr;
+        }
+
+        function pickRandom(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function intervalName(semitones) {
+            const names = {
+                1: "小二度",
+                2: "大二度",
+                3: "小三度",
+                4: "大三度",
+                5: "纯四度",
+                6: "增四 / 减五",
+                7: "纯五度",
+                8: "小六度",
+                9: "大六度",
+                10: "小七度",
+                11: "大七度",
+                12: "纯八度"
+            };
+            return names[semitones] || `${semitones} 半音`;
+        }
+
+        function buildIntervalPairs(notePool, intervalType) {
+            const option = INTERVAL_OPTIONS[intervalType] || INTERVAL_OPTIONS.mixed;
+            const noteMap = new Map(notePool.map((note) => [note.midi, note]));
+            const pairs = [];
+
+            notePool.forEach((first) => {
+                option.semitones.forEach((semitones) => {
+                    const second = noteMap.get(first.midi + semitones);
+                    if (!second) {
+                        return;
+                    }
+
+                    pairs.push({
+                        notes: [first, second],
+                        interval: intervalName(semitones),
+                        semitones,
+                        label: `${first.label} -> ${second.label}（${intervalName(semitones)}）`
+                    });
+                });
+            });
+
+            return pairs;
+        }
+
+        function centsDiff(freq, targetFreq) {
+            return 1200 * Math.log2(freq / targetFreq);
+        }
+
+        function median(values) {
+            if (!values.length) return NaN;
+            const v = [...values].sort((a, b) => a - b);
+            const mid = Math.floor(v.length / 2);
+            return v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2;
+        }
+
+        function fmt(n, digits = 1) {
+            return Number.isFinite(n) ? n.toFixed(digits) : "-";
+        }
+
+        function syncPracticeModeUI() {
+            const intervalMode = el.practiceMode.value === "interval";
+            el.intervalTypeWrap.hidden = !intervalMode;
+            el.staffSlot2.hidden = !intervalMode;
+            el.intervalInfo.hidden = !intervalMode;
+            el.staffLabel1.textContent = intervalMode ? "音1" : "目标音";
+        }
+
+        function renderExercise(exercise) {
+            renderStaff(exercise.notes[0], el.staffLines1, el.noteLayer1);
+
+            if (exercise.notes[1]) {
+                el.staffSlot2.hidden = false;
+                el.staffLabel1.textContent = "音1";
+                el.staffLabel2.textContent = "音2";
+                renderStaff(exercise.notes[1], el.staffLines2, el.noteLayer2);
+                el.targetFreq.textContent = `目标频率：${exercise.notes[0].freq.toFixed(2)} Hz -> ${exercise.notes[1].freq.toFixed(2)} Hz`;
+                el.intervalInfo.hidden = false;
+                el.intervalInfo.textContent = `音程：${exercise.interval}`;
+            } else {
+                el.staffSlot2.hidden = true;
+                el.staffLabel1.textContent = "目标音";
+                el.targetFreq.textContent = `目标频率：${exercise.notes[0].freq.toFixed(2)} Hz`;
+                el.intervalInfo.hidden = true;
+            }
+        }
+
+        function renderStaff(note, staffLinesEl, noteLayerEl) {
+            const staffTop = 100;
+            const gap = 16;
+            staffLinesEl.innerHTML = "";
+            for (let i = 0; i < 5; i++) {
+                const y = staffTop + i * gap;
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute("x1", "110");
+                line.setAttribute("x2", "530");
+                line.setAttribute("y1", String(y));
+                line.setAttribute("y2", String(y));
+                staffLinesEl.appendChild(line);
+            }
+
+            noteLayerEl.innerHTML = "";
+
+            const diatonicIndex = {
+                C: 0, D: 1, E: 2, F: 3, G: 4, A: 5, B: 6
+            };
+
+            const letter = note.name.replace("#", "");
+            const stepFromC0 = note.octave * 7 + diatonicIndex[letter];
+            const refE4 = 4 * 7 + diatonicIndex.E;
+            const stepDelta = stepFromC0 - refE4;
+            const bottomLineY = staffTop + 4 * gap;
+            const y = bottomLineY - stepDelta * (gap / 2);
+            const x = 330;
+
+            const noteHead = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+            noteHead.setAttribute("cx", String(x));
+            noteHead.setAttribute("cy", String(y));
+            noteHead.setAttribute("rx", "10");
+            noteHead.setAttribute("ry", "7");
+            noteHead.setAttribute("fill", "#221d18");
+            noteHead.setAttribute("transform", `rotate(-20 ${x} ${y})`);
+            noteLayerEl.appendChild(noteHead);
+
+            if (note.name.includes("#")) {
+                const sharp = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                sharp.setAttribute("x", String(x - 30));
+                sharp.setAttribute("y", String(y + 6));
+                sharp.setAttribute("font-size", "22");
+                sharp.setAttribute("fill", "#3c332a");
+                sharp.textContent = "#";
+                noteLayerEl.appendChild(sharp);
+            }
+
+            const lines = [];
+            const topLineY = staffTop;
+            if (y < topLineY - gap / 2) {
+                for (let ly = topLineY - gap; ly >= y - 2; ly -= gap) lines.push(ly);
+            }
+            if (y > bottomLineY + gap / 2) {
+                for (let ly = bottomLineY + gap; ly <= y + 2; ly += gap) lines.push(ly);
+            }
+            lines.forEach((ly) => {
+                const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                l.setAttribute("x1", String(x - 18));
+                l.setAttribute("x2", String(x + 18));
+                l.setAttribute("y1", String(ly));
+                l.setAttribute("y2", String(ly));
+                l.setAttribute("stroke", "#5f564b");
+                l.setAttribute("stroke-width", "1.2");
+                noteLayerEl.appendChild(l);
+            });
+        }
+
+        function autoCorrelate(buffer, sampleRate) {
+            let rms = 0;
+            for (let i = 0; i < buffer.length; i++) rms += buffer[i] * buffer[i];
+            rms = Math.sqrt(rms / buffer.length);
+            if (rms < 0.01) return -1;
+
+            let r1 = 0;
+            let r2 = buffer.length - 1;
+            const threshold = 0.2;
+
+            for (let i = 0; i < buffer.length / 2; i++) {
+                if (Math.abs(buffer[i]) < threshold) {
+                    r1 = i;
+                    break;
+                }
+            }
+            for (let i = 1; i < buffer.length / 2; i++) {
+                if (Math.abs(buffer[buffer.length - i]) < threshold) {
+                    r2 = buffer.length - i;
+                    break;
+                }
+            }
+
+            const cut = buffer.slice(r1, r2);
+            const size = cut.length;
+            const c = new Array(size).fill(0);
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size - i; j++) {
+                    c[i] += cut[j] * cut[j + i];
+                }
+            }
+
+            let d = 0;
+            while (d + 1 < c.length && c[d] > c[d + 1]) d++;
+
+            let maxVal = -1;
+            let maxPos = -1;
+            for (let i = d; i < c.length; i++) {
+                if (c[i] > maxVal) {
+                    maxVal = c[i];
+                    maxPos = i;
+                }
+            }
+            if (maxPos <= 0) return -1;
+
+            const t0 = maxPos;
+            const x1 = c[t0 - 1] || c[t0];
+            const x2 = c[t0];
+            const x3 = c[t0 + 1] || c[t0];
+            const a = (x1 + x3 - 2 * x2) / 2;
+            const b = (x3 - x1) / 2;
+            const shift = a ? -b / (2 * a) : 0;
+            const period = t0 + shift;
+            const freq = sampleRate / period;
+
+            if (!Number.isFinite(freq) || freq < 120 || freq > 1400) return -1;
+            return freq;
+        }
+
+        async function setupAudio() {
+            if (state.media) return;
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false
+                }
+            });
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const source = context.createMediaStreamSource(stream);
+            const analyser = context.createAnalyser();
+            analyser.fftSize = 4096;
+            source.connect(analyser);
+            state.media = { stream, context, analyser, source };
+        }
+
+        function playCountdownCue(frequency, duration = 0.12, gainValue = 0.035) {
+            if (!state.soundEnabled || !state.media || !state.media.context) return;
+
+            const context = state.media.context;
+            const osc = context.createOscillator();
+            const gain = context.createGain();
+            const now = context.currentTime;
+            const finalGain = Math.max(0.0001, gainValue * state.soundVolume);
+
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(frequency, now);
+
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(finalGain, now + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+            osc.connect(gain);
+            gain.connect(context.destination);
+            osc.start(now);
+            osc.stop(now + duration + 0.02);
+        }
+
+        function teardownAudio() {
+            if (!state.media) return;
+            state.media.stream.getTracks().forEach((t) => t.stop());
+            state.media.context.close();
+            state.media = null;
+        }
+
+        async function runCountdown(seconds, label = "") {
+            el.phase.textContent = label ? `阶段：${label} 倒计时` : "阶段：倒计时";
+            for (let i = seconds; i > 0; i--) {
+                if (!state.running || state.stopRequested) return false;
+                el.countdownText.textContent = label ? `${label} ${i}` : String(i);
+                playCountdownCue(660);
+                await wait(1000);
+            }
+            el.countdownText.textContent = label ? `${label} 开始` : "开始";
+            playCountdownCue(880, 0.18, 0.045);
+            await wait(350);
+            el.countdownText.textContent = "";
+            return true;
+        }
+
+        async function captureForTarget(targetFreq, durationSec, label = "") {
+            const analyser = state.media.analyser;
+            const buffer = new Float32Array(analyser.fftSize);
+            const centsSamples = [];
+            const freqSamples = [];
+            const startedAt = performance.now();
+
+            el.phase.textContent = label ? `阶段：${label} 收音中` : "阶段：收音中";
+
+            return await new Promise((resolve) => {
+                function tick() {
+                    if (!state.running || state.stopRequested) {
+                        resolve({ ok: false, freq: NaN, cents: NaN, hadSignal: false });
+                        return;
+                    }
+
+                    analyser.getFloatTimeDomainData(buffer);
+                    const freq = autoCorrelate(buffer, state.media.context.sampleRate);
+                    if (freq > 0) {
+                        const cents = centsDiff(freq, targetFreq);
+                        freqSamples.push(freq);
+                        centsSamples.push(cents);
+                        const meterPct = Math.max(0, Math.min(100, 50 + cents));
+                        el.meterBar.style.width = `${meterPct}%`;
+                        el.liveText.textContent = `${label ? `实时检测（${label}）` : "实时检测"}：${freq.toFixed(2)} Hz，偏差 ${cents.toFixed(1)} cent`;
+                    } else {
+                        el.liveText.textContent = `${label ? `实时检测（${label}）` : "实时检测"}：未识别到稳定音高`;
+                    }
+
+                    if (performance.now() - startedAt >= durationSec * 1000) {
+                        const medFreq = median(freqSamples);
+                        const medCents = median(centsSamples);
+                        const hadSignal = Number.isFinite(medFreq);
+                        resolve({
+                            ok: hadSignal && Math.abs(medCents) <= state.tolerance,
+                            freq: medFreq,
+                            cents: medCents,
+                            hadSignal
+                        });
+                        return;
+                    }
+
+                    state.rafId = requestAnimationFrame(tick);
+                }
+
+                state.rafId = requestAnimationFrame(tick);
+            });
+        }
+
+        function stopRun() {
+            state.stopRequested = true;
+            state.running = false;
+            cancelAnimationFrame(state.rafId);
+            el.phase.textContent = "阶段：已停止";
+            el.countdownText.textContent = "-";
+            el.liveText.textContent = "实时检测：-";
+            el.meterBar.style.width = "0%";
+            setSettingsLocked(false);
+        }
+
+        function setSettingsLocked(locked) {
+            const controls = [
+                el.rounds,
+                el.tol,
+                el.countdown,
+                el.listen,
+                el.practiceMode,
+                el.intervalType,
+                el.pool,
+                el.register,
+                el.soundEnabled,
+                el.soundVolume
+            ];
+
+            controls.forEach((control) => {
+                control.disabled = locked;
+            });
+
+            el.startBtn.disabled = locked;
+            el.stopBtn.disabled = !locked;
+        }
+
+        function updateSummary() {
+            const total = state.results.length;
+            const hit = state.results.filter((r) => r.hit).length;
+            const rate = total ? (hit / total) * 100 : 0;
+            const allCents = state.results.flatMap((r) => r.centsList || []).filter((value) => Number.isFinite(value));
+            const avgAbs = allCents.length
+                ? allCents.reduce((sum, value) => sum + Math.abs(value), 0) / allCents.length
+                : NaN;
+
+            el.summary.innerHTML = `
+          <span class="chip">命中：${hit}/${total}</span>
+          <span class="chip">胜率：${rate.toFixed(1)}%</span>
+          <span class="chip">平均偏差：${Number.isFinite(avgAbs) ? avgAbs.toFixed(1) + " cent" : "-"}</span>
+        `;
+        }
+
+        function appendResultRow(result) {
+            const tr = document.createElement("tr");
+                        const freqText = result.freqs.map((value) => Number.isFinite(value) ? `${value.toFixed(2)} Hz` : "-").join(" -> ");
+                        const centsText = result.centsList.map((value) => Number.isFinite(value) ? value.toFixed(1) : "-").join(" / ");
+            tr.innerHTML = `
+          <td>${result.round}</td>
+          <td>${result.noteLabel}</td>
+                    <td>${freqText}</td>
+                    <td>${centsText}</td>
+          <td class="${result.hit ? "ok" : "ng"}">${result.hit ? "命中" : "未命中"}</td>
+        `;
+            el.resultBody.appendChild(tr);
+        }
+
+        function wait(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        async function runSession() {
+            state.running = true;
+            state.stopRequested = false;
+            state.currentRound = 0;
+            state.results = [];
+            el.resultBody.innerHTML = "";
+            updateSummary();
+
+            state.totalRounds = Number(el.rounds.value) || 12;
+            state.tolerance = Number(el.tol.value) || 3;
+            state.countdownSec = Number(el.countdown.value) || 3;
+            state.listenSec = Number(el.listen.value) || 3;
+            state.practiceMode = el.practiceMode.value;
+            state.intervalType = el.intervalType.value;
+            state.soundEnabled = el.soundEnabled.checked;
+            state.soundVolume = Math.max(0, Math.min(1, Number(el.soundVolume.value) / 100));
+            state.notePool = buildNotePool(el.register.value, el.pool.value);
+            state.intervalPairs = buildIntervalPairs(state.notePool, state.intervalType);
+
+            if (!state.notePool.length) {
+                alert("当前设置没有可用音符。请调整音域或音符集合。");
+                stopRun();
+                return;
+            }
+
+            if (state.practiceMode === "interval" && !state.intervalPairs.length) {
+                alert("当前设置下没有可用的音程组合。请调整把位、音符集合或音程类型。");
+                stopRun();
+                return;
+            }
+
+            try {
+                await setupAudio();
+            } catch (err) {
+                alert("无法访问麦克风，请检查浏览器权限。\n" + (err && err.message ? err.message : ""));
+                stopRun();
+                return;
+            }
+
+            for (let i = 1; i <= state.totalRounds; i++) {
+                if (!state.running || state.stopRequested) break;
+
+                state.currentRound = i;
+                el.progress.textContent = `进度：${i}/${state.totalRounds}`;
+
+                const exercise = state.practiceMode === "interval"
+                    ? pickRandom(state.intervalPairs)
+                    : (() => {
+                        const note = pickRandom(state.notePool);
+                        return { notes: [note], interval: "", label: note.label };
+                    })();
+
+                state.currentNote = exercise.notes[0];
+                renderExercise(exercise);
+
+                const measurements = [];
+                let interrupted = false;
+
+                for (let noteIndex = 0; noteIndex < exercise.notes.length; noteIndex++) {
+                    const note = exercise.notes[noteIndex];
+                    const label = exercise.notes.length > 1 ? `音${noteIndex + 1}` : "";
+                    const countdownOk = await runCountdown(state.countdownSec, label);
+                    if (!countdownOk) {
+                        interrupted = true;
+                        break;
+                    }
+
+                    const measured = await captureForTarget(note.freq, state.listenSec, label);
+                    cancelAnimationFrame(state.rafId);
+                    measurements.push(measured);
+
+                    if (noteIndex < exercise.notes.length - 1) {
+                        await wait(250);
+                    }
+                }
+
+                if (interrupted || measurements.length !== exercise.notes.length) {
+                    break;
+                }
+
+                const result = {
+                    round: i,
+                    noteLabel: exercise.label,
+                    freqs: measurements.map((item) => item.freq),
+                    centsList: measurements.map((item) => item.cents),
+                    hit: measurements.every((item) => item.ok)
+                };
+
+                state.results.push(result);
+                appendResultRow(result);
+                updateSummary();
+
+                el.phase.textContent = result.hit ? "阶段：命中" : "阶段：未命中";
+                await wait(550);
+            }
+
+            const completed = state.results.length;
+            el.progress.textContent = `完成：${completed}/${state.totalRounds}`;
+            el.phase.textContent = completed === state.totalRounds ? "阶段：已完成" : "阶段：已中断";
+            el.countdownText.textContent = "-";
+            el.liveText.textContent = "实时检测：-";
+            el.meterBar.style.width = "0%";
+
+            state.running = false;
+            state.stopRequested = false;
+            setSettingsLocked(false);
+        }
+
+        el.practiceMode.addEventListener("change", () => {
+            syncPracticeModeUI();
+        });
+
+        el.startBtn.addEventListener("click", () => {
+            if (state.running) return;
+            setSettingsLocked(true);
+            runSession();
+        });
+
+        el.stopBtn.addEventListener("click", () => {
+            stopRun();
+        });
+
+        window.addEventListener("beforeunload", () => {
+            teardownAudio();
+        });
+
+        syncPracticeModeUI();
+        setSettingsLocked(false);
+        renderStaff(midiToNoteObj(69), el.staffLines1, el.noteLayer1);
+    </script>
+</body>
+
+</html>

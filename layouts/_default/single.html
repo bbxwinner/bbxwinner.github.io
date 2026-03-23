@@ -1,0 +1,37 @@
+{{- $raw     := trim .RawContent " \r\n\t" -}}
+{{- $doctype := "<!DOCTYPE html>" -}}
+{{- $htmltag := "<html" -}}
+{{- $isDoc   := or (hasPrefix $raw $doctype) (hasPrefix $raw $htmltag) -}}
+{{- if $isDoc -}}
+{{ $raw | safeHTML }}
+{{- else -}}
+{{- $lang := .Site.Language.Lang | default "en" -}}
+{{- $home := "/" | relURL -}}
+<!doctype html>
+<html lang="{{ $lang }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/svg+xml" href="{{ "/favicon.svg" | relURL }}">
+    <title>{{ .Title }} | {{ .Site.Title }}</title>
+    <style>
+      body { margin:0; font-family:Georgia,serif; background:#fff; color:#111; line-height:1.7; }
+      .wrap { max-width:760px; margin:2.5rem auto; padding:0 1rem; }
+      a { color:#0a58ca; }
+      header { margin-bottom:1.5rem; }
+      nav a { text-decoration:none; }
+      article img { max-width:100%; height:auto; }
+      pre { overflow-x:auto; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header>
+        <nav><a href="{{ $home }}">Home</a></nav>
+        <h1>{{ .Title }}</h1>
+      </header>
+      <article>{{ .Content }}</article>
+    </main>
+  </body>
+</html>
+{{- end -}}
